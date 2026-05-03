@@ -4,14 +4,13 @@
 <meta charset="UTF-8">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <script>
+// Only block pinch zoom, never block single-finger scroll
 document.addEventListener('gesturestart',function(e){e.preventDefault();},{passive:false});
 document.addEventListener('gesturechange',function(e){e.preventDefault();},{passive:false});
 document.addEventListener('gestureend',function(e){e.preventDefault();},{passive:false});
 document.addEventListener('touchmove',function(e){
-  // Only prevent pinch zoom (2+ fingers), allow single finger scroll
   if(e.touches.length>1){e.preventDefault();}
 },{passive:false});
-let _lt=0;document.addEventListener('touchend',function(e){let n=Date.now();if(n-_lt<300)e.preventDefault();_lt=n;},{passive:false});
 </script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
 <title>BookingBot</title>
@@ -31,6 +30,7 @@ let _lt=0;document.addEventListener('touchend',function(e){let n=Date.now();if(n
   --text:#f0f0f8;--text2:#9090b0;--text3:#555570;--radius:14px;--radius-sm:8px;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+.section-scroll{touch-action:pan-y !important;}
 html{height:100dvh;}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);margin:0;padding:0;overflow:hidden;height:100dvh;}
 .app{width:100%;max-width:480px;height:100dvh;margin:0 auto;display:flex;flex-direction:column;background:var(--bg);}
@@ -50,10 +50,15 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);mar
 .section-badge{font-size:11px;padding:2px 8px;border-radius:20px;font-weight:500;}
 .section-arrow{color:var(--text3);font-size:12px;transition:transform .2s;flex-shrink:0}
 .section.open .section-arrow{transform:rotate(180deg)}
-.section-body{display:none;padding:0 14px 14px;border-top:1px solid var(--border);overflow:hidden;}
+.section-body{display:none;border-top:1px solid var(--border);}
 .section.open .section-body{display:block}
-.section-scroll{max-height:50vh;overflow-y:scroll !important;-webkit-overflow-scrolling:touch !important;overscroll-behavior-y:contain;touch-action:pan-y !important;}
-.section-scroll::-webkit-scrollbar{width:0;height:0}
+.section-scroll{
+  max-height:50vh;
+  overflow-y:scroll;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;
+  padding:0 14px 14px;
+}
 .s-new .section-icon,.s-new .section-badge{background:var(--green-dim);color:var(--green)}
 .s-avail .section-icon,.s-avail .section-badge{background:var(--blue-dim);color:var(--blue)}
 .s-amend .section-icon,.s-amend .section-badge{background:var(--amber-dim);color:var(--amber)}
@@ -520,10 +525,10 @@ setInterval(loadBookings, 30000);
 // Fix iOS scroll inside section-scroll divs
 function fixScrollListeners() {
   document.querySelectorAll('.section-scroll').forEach(function(el) {
-    el.style.overflowY = 'scroll';
-    el.style.webkitOverflowScrolling = 'touch';
-    el.addEventListener('touchstart', function(e) { e.stopPropagation(); }, {passive:true});
-    el.addEventListener('touchmove', function(e) { e.stopPropagation(); }, {passive:true});
+    el.style.cssText += 'overflow-y:scroll !important;-webkit-overflow-scrolling:touch !important;touch-action:pan-y !important;';
+    // Remove old listeners by cloning
+    var clone = el.cloneNode(true);
+    el.parentNode.replaceChild(clone, el);
   });
 }
 document.addEventListener('DOMContentLoaded', fixScrollListeners);
