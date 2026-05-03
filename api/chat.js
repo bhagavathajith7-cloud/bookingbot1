@@ -1,29 +1,29 @@
 const { createClient } = require("@supabase/supabase-js");
- 
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
+
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${process.env.GEMINI_API_KEY}`;
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
- 
+
 module.exports = async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
   if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
- 
+
   try {
     const { message } = req.body;
     if (!message) return res.status(400).json({ reply: "No message provided", booking: null });
- 
+
     // Fetch bookings from Supabase
     const { data: bookings, error: fetchErr } = await supabase
       .from("bookings").select("*").order("check_in", { ascending: true });
     if (fetchErr) throw new Error("DB fetch failed: " + fetchErr.message);
- 
+
     const prompt = `You are BookingBot, a friendly room booking assistant. 
 CURRENT BOOKINGS IN DATABASE: ${JSON.stringify(bookings)}
- 
+
 The user says: "${message}"
- 
+
 Respond with ONLY a valid JSON object. No markdown. No backticks. Just the raw JSON:
 {
   "intent": "ADD or UPDATE or CANCEL or QUERY or LIST",
@@ -40,14 +40,14 @@ Respond with ONLY a valid JSON object. No markdown. No backticks. Just the raw J
   },
   "reply": "Your friendly reply to the user here with emojis"
 }
- 
+
 Rules:
 - reply field must always have a helpful message
 - Use year 2026 if year is not mentioned
 - Dates must be YYYY-MM-DD format
 - For LIST intent: reply with all bookings summary
 - For QUERY intent: reply with what was found`;
- 
+
     const aiRes = await fetch(GEMINI_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -56,12 +56,12 @@ Rules:
         generationConfig: { maxOutputTokens: 1000, temperature: 0.1 }
       })
     });
- 
+
     if (!aiRes.ok) {
       const errText = await aiRes.text();
       throw new Error("Gemini API error: " + errText);
     }
- 
+
     const aiJson = await aiRes.json();
     const rawText = aiJson.candidates?.[0]?.content?.parts?.[0]?.text || "";
     
@@ -79,10 +79,10 @@ Rules:
         intent: "UNKNOWN"
       });
     }
- 
+
     const { intent, data, reply } = parsed;
     let booking = null;
- 
+
     if (intent === "ADD" && data && data.guest_name) {
       const { data: inserted, error } = await supabase.from("bookings")
         .insert([{
@@ -96,22 +96,22 @@ Rules:
       if (error) throw new Error("Insert failed: " + error.message);
       booking = inserted;
     }
- 
+
     if (intent === "UPDATE" && data && data.match_id) {
       const { data: updated, error } = await supabase.from("bookings")
         .update(data.updates).eq("id", data.match_id).select().single();
       if (error) throw new Error("Update failed: " + error.message);
       booking = updated;
     }
- 
+
     if (intent === "CANCEL" && data && data.match_id) {
       await supabase.from("bookings").delete().eq("id", data.match_id);
     }
- 
+
     if (intent === "LIST") {
       booking = { list: bookings };
     }
- 
+
     if (intent === "QUERY") {
       let filtered = bookings;
       if (data && data.query_type === "by_room" && data.target) {
@@ -122,13 +122,13 @@ Rules:
       }
       booking = { list: filtered };
     }
- 
+
     return res.json({ 
       reply: reply || "Done! ✅", 
       booking, 
       intent 
     });
- 
+
   } catch (err) {
     console.error("Handler error:", err);
     return res.status(500).json({ 
