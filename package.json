@@ -1,0 +1,12 @@
+{
+  "name": "bookingbot",
+  "version": "1.0.0",
+  "description": "WhatsApp-style room booking assistant with Gemini AI + Supabase",
+  "scripts": {
+    "dev": "vercel dev",
+    "start": "node api/chat.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0"
+  }
+}

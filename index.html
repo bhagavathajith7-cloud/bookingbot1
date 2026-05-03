@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BookingBot – Room Manager</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏨</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:       #0d1117;
+    --panel:    #161b22;
+    --surface:  #1c2128;
+    --input-bg: #21262d;
+    --out:      #1a4731;
+    --out-bdr:  #238636;
+    --in:       #1c2128;
+    --green:    #3fb950;
+    --green-d:  #2ea043;
+    --accent:   #58a6ff;
+    --text:     #e6edf3;
+    --muted:    #7d8590;
+    --border:   #30363d;
+    --tick:     #58a6ff;
+    --danger:   #f85149;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;overflow:hidden}
+
+  body {
+    font-family:'Sora',sans-serif;
+    background:var(--bg);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+
+  .shell {
+    width:100%;max-width:500px;
+    height:100vh;
+    display:flex;flex-direction:column;
+    background:var(--bg);
+    border-left:1px solid var(--border);
+    border-right:1px solid var(--border);
+  }
+
+  /* ── Header ── */
+  .hdr {
+    background:var(--panel);
+    border-bottom:1px solid var(--border);
+    padding:12px 18px;
+    display:flex;align-items:center;gap:12px;
+    flex-shrink:0;
+  }
+  .hdr-avatar {
+    width:44px;height:44px;border-radius:50%;
+    background:linear-gradient(135deg,#238636,#0d5123);
+    display:flex;align-items:center;justify-content:center;
+    font-size:20px;flex-shrink:0;
+    box-shadow:0 0 0 2px var(--out-bdr);
+  }
+  .hdr-info{flex:1}
+  .hdr-name{font-size:15px;font-weight:600;color:var(--text);letter-spacing:-.2px}
+  .hdr-sub{
+    font-size:11.5px;color:var(--green);
+    display:flex;align-items:center;gap:5px;margin-top:1px;
+  }
+  .pulse{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+  .hdr-actions{display:flex;gap:8px}
+  .hdr-btn{
+    background:none;border:1px solid var(--border);
+    color:var(--muted);border-radius:8px;
+    padding:6px 12px;font-size:12px;font-family:inherit;
+    cursor:pointer;transition:all .2s;
+  }
+  .hdr-btn:hover{border-color:var(--green);color:var(--green)}
+
+  /* ── Messages ── */
+  .msgs {
+    flex:1;overflow-y:auto;
+    padding:16px 14px 10px;
+    display:flex;flex-direction:column;gap:6px;
+    background:
+      radial-gradient(ellipse 80% 40% at 50% 0%, rgba(35,134,54,.07) 0%, transparent 70%),
+      var(--bg);
+  }
+  .msgs::-webkit-scrollbar{width:4px}
+  .msgs::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+
+  .date-chip{
+    text-align:center;margin:6px 0;
+  }
+  .date-chip span{
+    background:var(--surface);color:var(--muted);
+    font-size:11px;padding:4px 14px;border-radius:20px;
+    border:1px solid var(--border);
+  }
+
+  /* ── Bubble ── */
+  .bwrap{display:flex;flex-direction:column;max-width:84%;animation:slideUp .22s ease}
+  @keyframes slideUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  .bwrap.out{align-self:flex-end;align-items:flex-end}
+  .bwrap.in {align-self:flex-start;align-items:flex-start}
+
+  .bubble{
+    padding:9px 12px 22px;
+    border-radius:10px;
+    font-size:13.5px;line-height:1.6;
+    color:var(--text);
+    position:relative;
+    word-break:break-word;
+    white-space:pre-wrap;
+  }
+  .bwrap.out .bubble{background:var(--out);border:1px solid var(--out-bdr);border-top-right-radius:2px}
+  .bwrap.in  .bubble{background:var(--in); border:1px solid var(--border);border-top-left-radius:2px}
+
+  .bmeta{
+    position:absolute;bottom:5px;right:9px;
+    font-size:10px;color:var(--muted);
+    display:flex;align-items:center;gap:3px;
+    white-space:nowrap;
+  }
+  .btick{color:var(--tick);font-size:11px}
+
+  /* ── Booking Card ── */
+  .bcard{
+    margin-top:8px;
+    background:rgba(0,0,0,.35);
+    border:1px solid var(--border);
+    border-left:3px solid var(--green);
+    border-radius:6px;
+    overflow:hidden;
+  }
+  .bcard-head{
+    background:rgba(35,134,54,.12);
+    padding:6px 10px;
+    font-size:11px;font-weight:600;
+    color:var(--green);letter-spacing:.4px;text-transform:uppercase;
+    display:flex;justify-content:space-between;align-items:center;
+  }
+  .bcard-body{padding:8px 10px}
+  .bcard-row{
+    display:flex;justify-content:space-between;align-items:flex-start;
+    padding:3px 0;border-bottom:1px solid rgba(48,54,61,.6);
+  }
+  .bcard-row:last-child{border-bottom:none}
+  .bcard-lbl{font-size:11px;color:var(--muted);flex-shrink:0;margin-right:8px;padding-top:1px}
+  .bcard-val{font-size:12.5px;color:var(--text);font-weight:500;text-align:right}
+
+  /* ── List card ── */
+  .list-card{
+    margin-top:8px;
+    background:rgba(0,0,0,.3);
+    border:1px solid var(--border);
+    border-radius:6px;
+    overflow:hidden;
+  }
+  .list-item{
+    padding:8px 10px;
+    border-bottom:1px solid var(--border);
+    font-size:12.5px;
+  }
+  .list-item:last-child{border-bottom:none}
+  .list-item-top{display:flex;justify-content:space-between}
+  .list-guest{font-weight:600;color:var(--text)}
+  .list-rooms{color:var(--green);font-size:12px}
+  .list-dates{color:var(--muted);font-size:11px;margin-top:2px}
+
+  /* ── Typing ── */
+  #typing-wrap .bubble{padding:12px 14px 12px}
+  .typing-dots{display:flex;align-items:center;gap:4px}
+  .typing-dots span{
+    width:7px;height:7px;border-radius:50%;
+    background:var(--muted);animation:tdot 1.3s infinite;
+  }
+  .typing-dots span:nth-child(2){animation-delay:.2s}
+  .typing-dots span:nth-child(3){animation-delay:.4s}
+  @keyframes tdot{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-5px)}}
+
+  /* ── Chips ── */
+  .chips{
+    display:flex;flex-wrap:wrap;gap:6px;
+    padding:6px 14px 8px;
+    background:var(--panel);
+    border-top:1px solid var(--border);
+  }
+  .chip{
+    background:var(--input-bg);color:var(--muted);
+    border:1px solid var(--border);border-radius:20px;
+    padding:5px 13px;font-size:11.5px;font-family:inherit;
+    cursor:pointer;transition:all .18s;
+  }
+  .chip:hover{border-color:var(--green);color:var(--green)}
+
+  /* ── Input bar ── */
+  .ibar{
+    background:var(--panel);
+    border-top:1px solid var(--border);
+    padding:10px 14px;
+    display:flex;align-items:flex-end;gap:10px;
+    flex-shrink:0;
+  }
+  .itxt{
+    flex:1;background:var(--input-bg);
+    border:1px solid var(--border);border-radius:22px;
+    padding:10px 16px;
+    color:var(--text);font-family:inherit;font-size:14px;
+    resize:none;outline:none;
+    line-height:1.45;min-height:44px;max-height:130px;
+    overflow-y:auto;transition:border-color .2s;
+  }
+  .itxt:focus{border-color:var(--green)}
+  .itxt::placeholder{color:var(--muted)}
+  .itxt::-webkit-scrollbar{width:3px}
+  .itxt::-webkit-scrollbar-thumb{background:var(--border)}
+
+  .sbtn{
+    width:46px;height:46px;border-radius:50%;
+    border:none;background:var(--green-d);color:#fff;
+    cursor:pointer;display:flex;align-items:center;justify-content:center;
+    flex-shrink:0;transition:background .2s,transform .1s;
+  }
+  .sbtn:hover{background:var(--green)}
+  .sbtn:active{transform:scale(.92)}
+  .sbtn svg{width:22px;height:22px}
+  .sbtn:disabled{opacity:.4;cursor:not-allowed}
+
+  /* ── Modal (All Bookings) ── */
+  .modal-bg{
+    display:none;position:fixed;inset:0;
+    background:rgba(0,0,0,.7);z-index:100;
+    align-items:center;justify-content:center;
+  }
+  .modal-bg.open{display:flex}
+  .modal{
+    background:var(--panel);border:1px solid var(--border);
+    border-radius:12px;width:90%;max-width:460px;max-height:80vh;
+    overflow:hidden;display:flex;flex-direction:column;
+  }
+  .modal-hdr{
+    padding:14px 18px;border-bottom:1px solid var(--border);
+    display:flex;justify-content:space-between;align-items:center;
+  }
+  .modal-title{font-size:14px;font-weight:600;color:var(--text)}
+  .modal-close{
+    background:none;border:none;color:var(--muted);
+    font-size:20px;cursor:pointer;line-height:1;
+  }
+  .modal-body{overflow-y:auto;padding:12px}
+  .modal-row{
+    background:var(--surface);border:1px solid var(--border);
+    border-radius:8px;padding:10px 14px;margin-bottom:8px;
+  }
+  .modal-row-top{display:flex;justify-content:space-between;align-items:center}
+  .modal-guest{font-weight:600;color:var(--text);font-size:13.5px}
+  .modal-rooms{
+    background:rgba(63,185,80,.15);color:var(--green);
+    border-radius:20px;padding:2px 10px;font-size:11.5px;font-weight:600;
+  }
+  .modal-dates{color:var(--muted);font-size:12px;margin-top:4px}
+  .modal-notes{color:var(--accent);font-size:11.5px;margin-top:3px}
+  .modal-empty{text-align:center;color:var(--muted);padding:30px;font-size:13px}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- Header -->
+  <div class="hdr">
+    <div class="hdr-avatar">🏨</div>
+    <div class="hdr-info">
+      <div class="hdr-name">BookingBot</div>
+      <div class="hdr-sub"><span class="pulse"></span>AI · Live Database</div>
+    </div>
+    <div class="hdr-actions">
+      <button class="hdr-btn" onclick="openModal()">📋 All Bookings</button>
+    </div>
+  </div>
+
+  <!-- Messages -->
+  <div class="msgs" id="msgs">
+    <div class="date-chip"><span>Today</span></div>
+    <div class="bwrap in">
+      <div class="bubble">
+        👋 Hi! I'm <b>BookingBot</b> — your smart room manager.<br><br>
+        Try saying:<br>
+        • <i>Room 1 and 2 booked May 10–28 for Pranav</i><br>
+        • <i>Who is in Room 3?</i><br>
+        • <i>Show all bookings</i><br>
+        • <i>Cancel Pranav's booking</i><br>
+        • <i>Extend Room 2 checkout to June 10</i>
+        <div class="bmeta">now</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick chips -->
+  <div class="chips">
+    <button class="chip" onclick="fillInput('Show all bookings')">📋 All bookings</button>
+    <button class="chip" onclick="fillInput('Is Room 1 available?')">🔍 Room 1 available?</button>
+    <button class="chip" onclick="fillInput('Who is in Room 2?')">👤 Who's in Room 2?</button>
+    <button class="chip" onclick="fillInput('Cancel a booking')">❌ Cancel</button>
+  </div>
+
+  <!-- Input -->
+  <div class="ibar">
+    <textarea class="itxt" id="itxt" placeholder="Message BookingBot…" rows="1"></textarea>
+    <button class="sbtn" id="sbtn" onclick="send()">
+      <svg viewBox="0 0 24 24" fill="white"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- All Bookings Modal -->
+<div class="modal-bg" id="modal">
+  <div class="modal">
+    <div class="modal-hdr">
+      <span class="modal-title">📋 All Bookings</span>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body">
+      <div class="modal-empty">Loading…</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Config ─────────────────────────────────────────────────────────────────
+// Replace this with your actual Vercel deployment URL after deploying
+// e.g. "https://bookingbot-yourname.vercel.app"
+const API_BASE = window.location.origin;
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+const msgsEl  = document.getElementById('msgs');
+const itxtEl  = document.getElementById('itxt');
+const sbtnEl  = document.getElementById('sbtn');
+
+function nowTime() {
+  return new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+}
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function scrollBot(){ msgsEl.scrollTop = msgsEl.scrollHeight; }
+
+function addBubble(html, dir) {
+  const wrap = document.createElement('div');
+  wrap.className = `bwrap ${dir}`;
+  const bub = document.createElement('div');
+  bub.className = 'bubble';
+  bub.innerHTML = html + `<div class="bmeta">${nowTime()}${dir==='out'?' <span class="btick">✓✓</span>':''}</div>`;
+  wrap.appendChild(bub);
+  msgsEl.appendChild(wrap);
+  scrollBot();
+}
+
+function showTyping() {
+  const wrap = document.createElement('div');
+  wrap.className = 'bwrap in'; wrap.id = 'typing-wrap';
+  wrap.innerHTML = `<div class="bubble"><div class="typing-dots"><span></span><span></span><span></span></div></div>`;
+  msgsEl.appendChild(wrap); scrollBot();
+}
+function hideTyping() { document.getElementById('typing-wrap')?.remove(); }
+
+// ── Booking card HTML ──────────────────────────────────────────────────────
+function bookingCard(b, label) {
+  const rooms = Array.isArray(b.rooms) ? b.rooms.join(', ') : b.rooms;
+  return `<div class="bcard">
+    <div class="bcard-head"><span>${label || 'BOOKING CONFIRMED'}</span><span>#${b.id}</span></div>
+    <div class="bcard-body">
+      <div class="bcard-row"><span class="bcard-lbl">Rooms</span><span class="bcard-val">Room ${rooms}</span></div>
+      <div class="bcard-row"><span class="bcard-lbl">Guest</span><span class="bcard-val">${esc(b.guest_name)}</span></div>
+      <div class="bcard-row"><span class="bcard-lbl">Check-in</span><span class="bcard-val">${b.check_in}</span></div>
+      <div class="bcard-row"><span class="bcard-lbl">Check-out</span><span class="bcard-val">${b.check_out}</span></div>
+      ${b.notes ? `<div class="bcard-row"><span class="bcard-lbl">Notes</span><span class="bcard-val">${esc(b.notes)}</span></div>` : ''}
+    </div>
+  </div>`;
+}
+
+function listCard(bookings) {
+  if (!bookings.length) return `<div style="color:var(--muted);font-size:13px;padding:4px 0">No bookings found.</div>`;
+  return `<div class="list-card">${bookings.map(b => {
+    const rooms = Array.isArray(b.rooms) ? b.rooms.join(', ') : b.rooms;
+    return `<div class="list-item">
+      <div class="list-item-top">
+        <span class="list-guest">${esc(b.guest_name)}</span>
+        <span class="list-rooms">Room ${esc(rooms)}</span>
+      </div>
+      <div class="list-dates">${b.check_in} → ${b.check_out}</div>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+// ── Send message ───────────────────────────────────────────────────────────
+async function send() {
+  const msg = itxtEl.value.trim();
+  if (!msg || sbtnEl.disabled) return;
+
+  itxtEl.value = ''; itxtEl.style.height = 'auto';
+  sbtnEl.disabled = true;
+  addBubble(esc(msg).replace(/\n/g,'<br>'), 'out');
+  showTyping();
+
+  try {
+    const res  = await fetch(`${API_BASE}/api/chat`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ message: msg })
+    });
+    const json = await res.json();
+    hideTyping();
+
+    const replyText = esc(json.reply || 'Done!').replace(/\n/g,'<br>');
+    let extra = '';
+
+    if (json.booking) {
+      const b = json.booking;
+      if (b.list) {
+        extra = listCard(b.list);
+      } else if (b.id) {
+        const label = json.intent === 'UPDATE' ? 'BOOKING UPDATED' : 'BOOKING CONFIRMED';
+        extra = bookingCard(b, label);
+      }
+    }
+
+    addBubble(replyText + extra, 'in');
+
+  } catch(e) {
+    hideTyping();
+    addBubble('⚠️ Could not reach the server. Check your connection.', 'in');
+  } finally {
+    sbtnEl.disabled = false;
+    itxtEl.focus();
+  }
+}
+
+// ── Modal ──────────────────────────────────────────────────────────────────
+async function openModal() {
+  document.getElementById('modal').classList.add('open');
+  document.getElementById('modal-body').innerHTML = '<div class="modal-empty">Loading…</div>';
+  try {
+    const res = await fetch(`${API_BASE}/api/bookings`);
+    const { bookings } = await res.json();
+    const el = document.getElementById('modal-body');
+    if (!bookings?.length) {
+      el.innerHTML = '<div class="modal-empty">No bookings yet 📭</div>';
+      return;
+    }
+    el.innerHTML = bookings.map(b => {
+      const rooms = Array.isArray(b.rooms) ? b.rooms.join(', ') : b.rooms;
+      return `<div class="modal-row">
+        <div class="modal-row-top">
+          <span class="modal-guest">${esc(b.guest_name)}</span>
+          <span class="modal-rooms">Room ${esc(rooms)}</span>
+        </div>
+        <div class="modal-dates">📅 ${b.check_in} → ${b.check_out}</div>
+        ${b.notes ? `<div class="modal-notes">📝 ${esc(b.notes)}</div>` : ''}
+      </div>`;
+    }).join('');
+  } catch(e) {
+    document.getElementById('modal-body').innerHTML = '<div class="modal-empty">Failed to load.</div>';
+  }
+}
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+
+// ── Input auto-grow ────────────────────────────────────────────────────────
+itxtEl.addEventListener('input', function(){
+  this.style.height = 'auto';
+  this.style.height = Math.min(this.scrollHeight, 130) + 'px';
+});
+itxtEl.addEventListener('keydown', function(e){
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+});
+function fillInput(t){ itxtEl.value = t; itxtEl.focus(); }
+</script>
+</body>
+</html>
