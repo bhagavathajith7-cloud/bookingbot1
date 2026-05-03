@@ -2,17 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<script>
-// Only block pinch zoom, never block single-finger scroll
-document.addEventListener('gesturestart',function(e){e.preventDefault();},{passive:false});
-document.addEventListener('gesturechange',function(e){e.preventDefault();},{passive:false});
-document.addEventListener('gestureend',function(e){e.preventDefault();},{passive:false});
-document.addEventListener('touchmove',function(e){
-  if(e.touches.length>1){e.preventDefault();}
-},{passive:false});
-</script>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>BookingBot</title>
 <link rel="icon" href="/icon-192.png">
 <link rel="apple-touch-icon" href="/icon-192.png">
@@ -21,257 +11,421 @@ document.addEventListener('touchmove',function(e){
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="BookingBot">
 <meta name="theme-color" content="#0a0a0f">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{
-  --bg:#0a0a0f;--surface:#13131a;--card:#1a1a24;--border:#2a2a3a;--border2:#333348;
-  --green:#00c896;--green-dim:#003d2e;--red:#ff4d6d;--red-dim:#3d0014;
-  --amber:#ffb347;--amber-dim:#3d2800;--blue:#4d9fff;--blue-dim:#00234d;
-  --text:#f0f0f8;--text2:#9090b0;--text3:#555570;--radius:14px;--radius-sm:8px;
+:root {
+  --bg: #0a0a0f;
+  --surface: #13131a;
+  --card: #1a1a24;
+  --border: #2a2a3a;
+  --green: #00c896;
+  --green-dim: #003d2e;
+  --red: #ff4d6d;
+  --red-dim: #3d0014;
+  --amber: #ffb347;
+  --amber-dim: #3d2800;
+  --blue: #4d9fff;
+  --blue-dim: #00234d;
+  --purple: #a78bfa;
+  --purple-dim: #1a1040;
+  --text: #f0f0f8;
+  --text2: #9090b0;
+  --text3: #555570;
 }
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-html{height:100dvh;}
-body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);margin:0;padding:0;height:100svh;}
-.app{width:100%;max-width:480px;height:100svh;margin:0 auto;display:flex;flex-direction:column;background:var(--bg);overflow:hidden;}
-.hdr{flex-shrink:0;padding:max(14px,env(safe-area-inset-top)) 18px 14px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;}
-.hdr-icon{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#003d2e,#006652);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;box-shadow:0 0 0 1px var(--green) inset;}
-.hdr-title{font-size:16px;font-weight:700;color:var(--text);letter-spacing:-.3px}
-.hdr-sub{font-size:11px;color:var(--green);margin-top:1px;display:flex;align-items:center;gap:5px}
-.hdr-dot{width:5px;height:5px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-.main{flex:1;overflow-y:auto;overflow-x:hidden;padding:16px 14px 40px;display:flex;flex-direction:column;gap:10px;min-height:0;overscroll-behavior-y:contain;}
-.main::-webkit-scrollbar{display:none}
-.section{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
-.section-hdr{display:flex;align-items:center;gap:10px;padding:14px 16px;cursor:pointer;user-select:none;transition:background .15s;}
-.section-hdr:active{background:rgba(255,255,255,.03)}
-.section-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
-.section-title{flex:1;font-size:14px;font-weight:600;color:var(--text)}
-.section-badge{font-size:11px;padding:2px 8px;border-radius:20px;font-weight:500;}
-.section-arrow{color:var(--text3);font-size:12px;transition:transform .2s;flex-shrink:0}
-.section.open .section-arrow{transform:rotate(180deg)}
-.section-body{display:none;border-top:1px solid var(--border);padding:0 14px 14px;}
-.section.open .section-body{display:block}
-.s-new .section-icon,.s-new .section-badge{background:var(--green-dim);color:var(--green)}
-.s-avail .section-icon,.s-avail .section-badge{background:var(--blue-dim);color:var(--blue)}
-.s-amend .section-icon,.s-amend .section-badge{background:var(--amber-dim);color:var(--amber)}
-.s-cancel .section-icon,.s-cancel .section-badge{background:var(--red-dim);color:var(--red)}
-.s-bookings .section-icon,.s-bookings .section-badge{background:#1a1a3d;color:#a78bfa}
-.form-group{margin-top:12px}
-.form-label{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.6px;margin-bottom:5px;display:block;}
-.form-input,.form-select{width:100%;padding:11px 13px;background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color .2s;-webkit-appearance:none;}
-.form-input:focus,.form-select:focus{border-color:var(--green)}
-.form-input::placeholder{color:var(--text3)}
-.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
-.form-row .form-group{margin-top:0}
-.amount-wrap{position:relative}
-.amount-prefix{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--green);font-weight:600;font-size:14px;pointer-events:none;}
-.amount-wrap .form-input{padding-left:26px}
-.room-checks{display:flex;gap:8px;margin-top:6px}
-.room-check{flex:1;background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:10px 0;text-align:center;cursor:pointer;transition:all .2s;font-size:13px;font-weight:500;color:var(--text2);user-select:none;}
-.room-check.selected{background:var(--green-dim);border-color:var(--green);color:var(--green);}
-.room-check span{display:block;font-size:18px;margin-bottom:2px}
-.btn{width:100%;padding:13px;border-radius:var(--radius-sm);border:none;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;margin-top:14px;transition:all .2s;}
-.btn-green{background:var(--green);color:#000}
-.btn-amber{background:var(--amber);color:#000}
-.btn-red{background:var(--red);color:#fff}
-.btn:active{transform:scale(.98)}
-.room-status-grid{display:flex;flex-direction:column;gap:8px;padding-top:14px}
-.room-status{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:12px 14px;display:flex;align-items:center;gap:12px;}
-.room-badge{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;font-family:'DM Mono',monospace;flex-shrink:0;}
-.room-badge.free{background:var(--green-dim);color:var(--green)}
-.room-badge.occupied{background:var(--red-dim);color:var(--red)}
-.room-info{flex:1;min-width:0}
-.room-name{font-size:13px;font-weight:600;color:var(--text)}
-.room-detail{font-size:11.5px;color:var(--text2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.room-pill{font-size:10.5px;font-weight:600;padding:3px 9px;border-radius:20px;flex-shrink:0;}
-.room-pill.free{background:var(--green-dim);color:var(--green)}
-.room-pill.occupied{background:var(--red-dim);color:var(--red)}
-.booking-list{display:flex;flex-direction:column;gap:8px;padding-top:4px}
-.booking-item{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:12px 14px;cursor:pointer;transition:border-color .2s;}
-.booking-item.selected{border-color:var(--amber);background:rgba(255,179,71,.05)}
-.booking-item-top{display:flex;justify-content:space-between;align-items:center}
-.booking-guest{font-size:13px;font-weight:600;color:var(--text)}
-.booking-rooms-lbl{font-size:12px;color:var(--amber);font-weight:500}
-.booking-dates{font-size:11.5px;color:var(--text2);margin-top:3px}
-.booking-amount{font-size:11.5px;color:var(--green);margin-top:2px}
-.toast{position:fixed;bottom:max(24px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%) translateY(20px);background:var(--card);border:1px solid var(--border2);border-radius:10px;padding:11px 18px;font-size:13px;font-weight:500;color:var(--text);white-space:nowrap;opacity:0;transition:all .3s;z-index:100;box-shadow:0 8px 30px rgba(0,0,0,.5);pointer-events:none;}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-.toast.success{border-color:var(--green);color:var(--green)}
-.toast.error{border-color:var(--red);color:var(--red)}
-.toast.warn{border-color:var(--amber);color:var(--amber)}
-.loading{text-align:center;padding:20px;color:var(--text3);font-size:13px;}
-.spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--border2);border-top-color:var(--green);border-radius:50%;animation:spin .7s linear infinite;margin-right:6px;vertical-align:middle;}
-@keyframes spin{to{transform:rotate(360deg)}}
-.empty{text-align:center;padding:24px 16px;color:var(--text3);font-size:13px}
-.empty-icon{font-size:32px;display:block;margin-bottom:8px}
-.divider{height:1px;background:var(--border);margin:14px 0}
-.cancel-confirm{background:var(--red-dim);border:1px solid var(--red);border-radius:var(--radius-sm);padding:12px 14px;margin-top:12px;font-size:13px;color:var(--text);line-height:1.7;}
-.list-label{padding-top:14px;font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.6px;font-weight:600;margin-bottom:8px;}
-.bl-label{font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px;padding-top:4px;}
-.bcard{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:8px;}
-.bcard-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;}
-.bcard-guest{font-size:13px;font-weight:600;color:var(--text)}
-.bcard-rooms{font-size:11.5px;color:var(--text2);margin-top:2px}
-.bcard-amount{font-size:13px;font-weight:600;color:var(--green);white-space:nowrap;margin-left:8px;}
-.bcard-dates{font-size:12px;color:var(--text2)}
-.bcard-notes{font-size:11.5px;color:var(--text3);margin-top:4px}
+ 
+* { box-sizing: border-box; margin: 0; padding: 0; }
+ 
+html, body {
+  height: 100%;
+  background: var(--bg);
+  font-family: 'DM Sans', sans-serif;
+  color: var(--text);
+  overflow: hidden;
+}
+ 
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  max-width: 480px;
+  margin: 0 auto;
+  background: var(--bg);
+}
+ 
+/* Header */
+.hdr {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  padding-top: max(12px, env(safe-area-inset-top));
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+.hdr-icon {
+  width: 40px; height: 40px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #003d2e, #006652);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; flex-shrink: 0;
+  box-shadow: 0 0 0 1px var(--green) inset;
+}
+.hdr-name { font-size: 16px; font-weight: 700; }
+.hdr-sub { font-size: 11px; color: var(--green); display: flex; align-items: center; gap: 4px; margin-top: 1px; }
+.dot { width: 5px; height: 5px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+ 
+/* Scrollable page */
+.page {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 12px;
+  padding-bottom: max(24px, env(safe-area-inset-bottom));
+}
+ 
+/* Section */
+.sec {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+ 
+.sec-hdr {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 14px;
+  cursor: pointer;
+  user-select: none;
+}
+.sec-ico {
+  width: 36px; height: 36px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; flex-shrink: 0;
+}
+.sec-title { flex: 1; font-size: 14px; font-weight: 600; }
+.sec-tag {
+  font-size: 11px; font-weight: 600;
+  padding: 2px 9px; border-radius: 20px;
+}
+.sec-arr { font-size: 11px; color: var(--text3); transition: transform .2s; margin-left: 4px; }
+.sec.open .sec-arr { transform: rotate(180deg); }
+ 
+.sec-body {
+  display: none;
+  padding: 12px 14px 14px;
+  border-top: 1px solid var(--border);
+}
+.sec.open .sec-body { display: block; }
+ 
+/* Section color themes */
+.sec-new .sec-ico, .sec-new .sec-tag { background: var(--green-dim); color: var(--green); }
+.sec-avail .sec-ico, .sec-avail .sec-tag { background: var(--blue-dim); color: var(--blue); }
+.sec-all .sec-ico, .sec-all .sec-tag { background: var(--purple-dim); color: var(--purple); }
+.sec-amend .sec-ico, .sec-amend .sec-tag { background: var(--amber-dim); color: var(--amber); }
+.sec-cancel .sec-ico, .sec-cancel .sec-tag { background: var(--red-dim); color: var(--red); }
+ 
+/* Forms */
+.flabel {
+  display: block;
+  font-size: 10.5px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: .6px;
+  color: var(--text2); margin-bottom: 5px;
+}
+.finput {
+  width: 100%; padding: 11px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px; outline: none;
+  transition: border-color .2s;
+  -webkit-appearance: none;
+}
+.finput:focus { border-color: var(--green); }
+.finput::placeholder { color: var(--text3); }
+.fgroup { margin-bottom: 12px; }
+.frow { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+.amt-wrap { position: relative; }
+.amt-pre { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--green); font-weight: 600; font-size: 13px; pointer-events: none; }
+.amt-wrap .finput { padding-left: 24px; }
+ 
+/* Room selector */
+.room-sel { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+.rsel-btn {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 10px 4px;
+  text-align: center; cursor: pointer;
+  transition: all .15s;
+  font-size: 12.5px; font-weight: 500; color: var(--text2);
+}
+.rsel-btn span { display: block; font-size: 18px; margin-bottom: 3px; }
+.rsel-btn.on { background: var(--green-dim); border-color: var(--green); color: var(--green); }
+ 
+/* Buttons */
+.btn {
+  display: block; width: 100%;
+  padding: 13px; margin-top: 4px;
+  border: none; border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px; font-weight: 600;
+  cursor: pointer; transition: opacity .15s;
+}
+.btn:active { opacity: .8; }
+.btn-g { background: var(--green); color: #000; }
+.btn-a { background: var(--amber); color: #000; }
+.btn-r { background: var(--red); color: #fff; }
+ 
+/* Room availability cards */
+.rcard {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 11px 12px;
+  margin-bottom: 8px;
+}
+.rbadge {
+  width: 40px; height: 40px; border-radius: 8px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700;
+}
+.rbadge.free { background: var(--green-dim); color: var(--green); }
+.rbadge.occ { background: var(--red-dim); color: var(--red); }
+.rinfo { flex: 1; min-width: 0; }
+.rname { font-size: 13px; font-weight: 600; }
+.rdetail { font-size: 11.5px; color: var(--text2); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rpill { font-size: 10.5px; font-weight: 600; padding: 3px 9px; border-radius: 20px; flex-shrink: 0; }
+.rpill.free { background: var(--green-dim); color: var(--green); }
+.rpill.occ { background: var(--red-dim); color: var(--red); }
+ 
+/* Booking cards */
+.bcard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 11px 12px;
+  margin-bottom: 8px;
+}
+.bcard.sel { border-color: var(--amber); background: rgba(255,179,71,.05); }
+.bcard.clickable { cursor: pointer; }
+.bcard-row1 { display: flex; justify-content: space-between; align-items: center; }
+.bguest { font-size: 13px; font-weight: 600; }
+.brooms { font-size: 12px; color: var(--amber); font-weight: 500; }
+.bdates { font-size: 11.5px; color: var(--text2); margin-top: 3px; }
+.bamount { font-size: 11.5px; color: var(--green); margin-top: 2px; }
+.bnotes { font-size: 11px; color: var(--text3); margin-top: 2px; }
+ 
+/* Group labels */
+.glabel {
+  font-size: 10.5px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .7px;
+  margin: 12px 0 6px;
+  display: flex; align-items: center; gap: 5px;
+}
+ 
+/* Confirm cancel box */
+.confirm-box {
+  background: var(--red-dim); border: 1px solid var(--red);
+  border-radius: 8px; padding: 12px;
+  font-size: 13px; line-height: 1.7;
+  margin-top: 8px;
+}
+ 
+/* Divider */
+.div { height: 1px; background: var(--border); margin: 12px 0; }
+ 
+/* Toast */
+.toast {
+  position: fixed; bottom: 24px; left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 10px 18px;
+  font-size: 13px; font-weight: 500;
+  opacity: 0; transition: all .25s; z-index: 999;
+  white-space: nowrap; pointer-events: none;
+  box-shadow: 0 4px 20px rgba(0,0,0,.5);
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast.ok { border-color: var(--green); color: var(--green); }
+.toast.err { border-color: var(--red); color: var(--red); }
+.toast.warn { border-color: var(--amber); color: var(--amber); }
+ 
+/* Loading */
+.spin {
+  display: inline-block; width: 14px; height: 14px;
+  border: 2px solid var(--border); border-top-color: var(--green);
+  border-radius: 50%; animation: spin .7s linear infinite;
+  vertical-align: middle; margin-right: 5px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading { color: var(--text3); font-size: 13px; padding: 12px 0; text-align: center; }
+.empty { text-align: center; padding: 20px 0; color: var(--text3); font-size: 13px; }
 </style>
 </head>
 <body>
 <div class="app">
+ 
   <div class="hdr">
     <div class="hdr-icon">🏨</div>
     <div>
-      <div class="hdr-title">BookingBot</div>
-      <div class="hdr-sub"><span class="hdr-dot"></span>Live Database · 3 Rooms</div>
+      <div class="hdr-name">BookingBot</div>
+      <div class="hdr-sub"><span class="dot"></span>Live Database · 3 Rooms</div>
     </div>
   </div>
-  <div class="main">
  
-    <!-- 1. NEW BOOKING -->
-    <div class="section s-new" id="s-new">
-      <div class="section-hdr" onclick="toggle('s-new')">
-        <div class="section-icon">➕</div>
-        <div class="section-title">New Booking</div>
-        <div class="section-badge">Add</div>
-        <div class="section-arrow">▼</div>
+  <div class="page">
+ 
+    <!-- NEW BOOKING -->
+    <div class="sec sec-new" id="s1">
+      <div class="sec-hdr" onclick="tog('s1')">
+        <div class="sec-ico">➕</div>
+        <div class="sec-title">New Booking</div>
+        <div class="sec-tag">Add</div>
+        <div class="sec-arr">▼</div>
       </div>
-      <div class="section-body">
-        <div class="form-group" style="margin-top:14px">
-          <label class="form-label">Select Rooms</label>
-          <div class="room-checks">
-            <div class="room-check" id="rc1" onclick="toggleRoom('1')"><span>🛏</span>Room 1</div>
-            <div class="room-check" id="rc2" onclick="toggleRoom('2')"><span>🛏</span>Room 2</div>
-            <div class="room-check" id="rc3" onclick="toggleRoom('3')"><span>🛏</span>Room 3</div>
+      <div class="sec-body">
+        <div class="flabel">Select Rooms</div>
+        <div class="room-sel">
+          <div class="rsel-btn" id="r1" onclick="selRoom('1')"><span>🛏</span>Room 1</div>
+          <div class="rsel-btn" id="r2" onclick="selRoom('2')"><span>🛏</span>Room 2</div>
+          <div class="rsel-btn" id="r3" onclick="selRoom('3')"><span>🛏</span>Room 3</div>
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Guest Name</label>
+          <input class="finput" id="n-name" type="text" placeholder="e.g. Pranav">
+        </div>
+        <div class="frow">
+          <div>
+            <label class="flabel">Check-in</label>
+            <input class="finput" id="n-in" type="date">
           </div>
-        <div class="form-group">
-          <label class="form-label">Guest Name</label>
-          <input class="form-input" id="new-name" type="text" placeholder="e.g. Pranav">
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">Check-in Date</label>
-            <input class="form-input" id="new-checkin" type="date">
+          <div>
+            <label class="flabel">Check-out</label>
+            <input class="finput" id="n-out" type="date">
           </div>
-          <div class="form-group">
-            <label class="form-label">Check-out Date</label>
-            <input class="form-input" id="new-checkout" type="date">
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Amount (₹)</label>
+          <div class="amt-wrap">
+            <span class="amt-pre">₹</span>
+            <input class="finput" id="n-amt" type="number" min="0" placeholder="0">
           </div>
-        <div class="form-group">
-          <label class="form-label">Amount (₹)</label>
-          <div class="amount-wrap">
-            <span class="amount-prefix">₹</span>
-            <input class="form-input" id="new-amount" type="number" placeholder="0" min="0">
-          </div>
-        <div class="form-group">
-          <label class="form-label">Notes (optional)</label>
-          <input class="form-input" id="new-notes" type="text" placeholder="Any extra info...">
-        <button class="btn btn-green" onclick="addBooking()">✅ Confirm Booking</button>
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Notes (optional)</label>
+          <input class="finput" id="n-notes" type="text" placeholder="Any extra info...">
+        </div>
+        <button class="btn btn-g" onclick="doAdd()">✅ Confirm Booking</button>
       </div>
     </div>
  
-    <!-- 2. ROOM AVAILABILITY -->
-    <div class="section s-avail open" id="s-avail">
-      <div class="section-hdr" onclick="toggle('s-avail')">
-        <div class="section-icon">🏠</div>
-        <div class="section-title">Room Availability</div>
-        <div class="section-badge" id="avail-badge">—</div>
-        <div class="section-arrow">▼</div>
+    <!-- ROOM AVAILABILITY -->
+    <div class="sec sec-avail open" id="s2">
+      <div class="sec-hdr" onclick="tog('s2')">
+        <div class="sec-ico">🏠</div>
+        <div class="sec-title">Room Availability</div>
+        <div class="sec-tag" id="avail-tag">—</div>
+        <div class="sec-arr">▼</div>
       </div>
-      <div class="section-body">
-        <div class="room-status-grid" id="room-grid">
-          <div class="loading"><span class="spinner"></span>Loading...</div>
-      </div>
-    </div>
- 
-    <!-- 3. ALL BOOKINGS -->
-    <div class="section s-bookings" id="s-bookings">
-      <div class="section-hdr" onclick="toggle('s-bookings')">
-        <div class="section-icon">📋</div>
-        <div class="section-title">All Bookings</div>
-        <div class="section-badge" id="bookings-badge">—</div>
-        <div class="section-arrow">▼</div>
-      </div>
-      <div class="section-body">
-        <div id="all-bookings-list">
-          <div class="loading"><span class="spinner"></span>Loading...</div>
+      <div class="sec-body">
+        <div id="avail-body"><div class="loading"><span class="spin"></span>Loading...</div></div>
       </div>
     </div>
  
-    <!-- 4. AMEND BOOKING -->
-    <div class="section s-amend" id="s-amend">
-      <div class="section-hdr" onclick="toggleAmend()">
-        <div class="section-icon">✏️</div>
-        <div class="section-title">Amend Booking</div>
-        <div class="section-badge">Edit</div>
-        <div class="section-arrow">▼</div>
+    <!-- ALL BOOKINGS -->
+    <div class="sec sec-all" id="s3">
+      <div class="sec-hdr" onclick="tog('s3')">
+        <div class="sec-ico">📋</div>
+        <div class="sec-title">All Bookings</div>
+        <div class="sec-tag" id="all-tag">—</div>
+        <div class="sec-arr">▼</div>
       </div>
-      <div class="section-body">
-        <div class="list-label">Tap a booking to edit</div>
-        <div class="booking-list" id="amend-list"><div class="loading"><span class="spinner"></span>Loading...</div></div>
+      <div class="sec-body">
+        <div id="all-body"><div class="loading"><span class="spin"></span>Loading...</div></div>
+      </div>
+    </div>
+ 
+    <!-- AMEND BOOKING -->
+    <div class="sec sec-amend" id="s4">
+      <div class="sec-hdr" onclick="tog('s4'); renderPick('amend-pick', 'a')">
+        <div class="sec-ico">✏️</div>
+        <div class="sec-title">Amend Booking</div>
+        <div class="sec-tag">Edit</div>
+        <div class="sec-arr">▼</div>
+      </div>
+      <div class="sec-body">
+        <div id="amend-pick"></div>
         <div id="amend-form" style="display:none">
-          <div class="divider"></div>
-          <div class="form-group">
-            <label class="form-label">Guest Name</label>
-            <input class="form-input" id="a-name" type="text">
+          <div class="div"></div>
+          <div class="fgroup">
+            <label class="flabel">Guest Name</label>
+            <input class="finput" id="a-name" type="text">
           </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">Check-in</label>
-              <input class="form-input" id="a-cin" type="date">
+          <div class="frow">
+            <div>
+              <label class="flabel">Check-in</label>
+              <input class="finput" id="a-in" type="date">
             </div>
-            <div class="form-group">
-              <label class="form-label">Check-out</label>
-              <input class="form-input" id="a-cout" type="date">
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Amount (₹)</label>
-            <div class="amount-wrap">
-              <span class="amount-prefix">₹</span>
-              <input class="form-input" id="a-amount" type="number" min="0">
+            <div>
+              <label class="flabel">Check-out</label>
+              <input class="finput" id="a-out" type="date">
             </div>
           </div>
-          <div class="form-group">
-            <label class="form-label">Notes</label>
-            <input class="form-input" id="a-notes" type="text">
+          <div class="fgroup">
+            <label class="flabel">Amount (₹)</label>
+            <div class="amt-wrap">
+              <span class="amt-pre">₹</span>
+              <input class="finput" id="a-amt" type="number" min="0">
+            </div>
           </div>
-          <button class="btn btn-amber" onclick="saveAmend()">💾 Save Changes</button>
+          <div class="fgroup">
+            <label class="flabel">Notes</label>
+            <input class="finput" id="a-notes" type="text">
+          </div>
+          <button class="btn btn-a" onclick="doAmend()">💾 Save Changes</button>
+        </div>
       </div>
     </div>
  
-    <!-- 4. CANCEL BOOKING -->
-    <div class="section s-cancel" id="s-cancel">
-      <div class="section-hdr" onclick="toggleCancel()">
-        <div class="section-icon">🗑️</div>
-        <div class="section-title">Cancel Booking</div>
-        <div class="section-badge">Remove</div>
-        <div class="section-arrow">▼</div>
+    <!-- CANCEL BOOKING -->
+    <div class="sec sec-cancel" id="s5">
+      <div class="sec-hdr" onclick="tog('s5'); renderPick('cancel-pick', 'c')">
+        <div class="sec-ico">🗑️</div>
+        <div class="sec-title">Cancel Booking</div>
+        <div class="sec-tag">Remove</div>
+        <div class="sec-arr">▼</div>
       </div>
-      <div class="section-body">
-        <div class="list-label">Tap a booking to cancel</div>
-        <div class="booking-list" id="cancel-list"><div class="loading"><span class="spinner"></span>Loading...</div></div>
-        <div id="cancel-box" style="display:none">
-          <div class="cancel-confirm" id="cancel-text"></div>
-          <button class="btn btn-red" onclick="confirmCancel()">🗑️ Yes, Cancel This Booking</button>
+      <div class="sec-body">
+        <div id="cancel-pick"></div>
+        <div id="cancel-confirm" style="display:none">
+          <div class="confirm-box" id="cancel-text"></div>
+          <button class="btn btn-r" onclick="doCancel()">🗑️ Yes, Cancel This Booking</button>
+        </div>
       </div>
     </div>
  
   </div>
 </div>
+ 
 <div class="toast" id="toast"></div>
  
 <script>
 const API = window.location.origin;
 let bookings = [];
+let selRooms = [];
 let amendId = null;
 let cancelId = null;
-let selectedRooms = [];
  
-function toast(msg, type='success') {
+function toast(msg, type='ok') {
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.className = 'toast ' + type + ' show';
-  setTimeout(() => { t.className = 'toast'; }, 2800);
+  setTimeout(() => t.className = 'toast', 2800);
 }
  
 function fmt(d) {
@@ -281,261 +435,180 @@ function fmt(d) {
   return parseInt(day) + ' ' + mn[parseInt(m)] + ' ' + y;
 }
  
-function toggle(id) {
+function tog(id) {
   document.getElementById(id).classList.toggle('open');
 }
  
-function toggleRoom(n) {
-  const el = document.getElementById('rc' + n);
-  const i = selectedRooms.indexOf(n);
-  if (i >= 0) { selectedRooms.splice(i, 1); el.classList.remove('selected'); }
-  else { selectedRooms.push(n); el.classList.add('selected'); }
+function selRoom(n) {
+  const el = document.getElementById('r' + n);
+  const i = selRooms.indexOf(n);
+  if (i >= 0) { selRooms.splice(i,1); el.classList.remove('on'); }
+  else { selRooms.push(n); el.classList.add('on'); }
 }
  
-function bookingItemHtml(b, idPrefix) {
-  const rooms = Array.isArray(b.rooms) ? b.rooms.join(', ') : b.rooms;
-  return '<div class="booking-item" id="' + idPrefix + b.id + '" onclick="select_' + idPrefix + '(' + b.id + ')">' +
-    '<div class="booking-item-top"><span class="booking-guest">' + b.guest_name + '</span>' +
-    '<span class="booking-rooms-lbl">Room ' + rooms + '</span></div>' +
-    '<div class="booking-dates">📅 ' + fmt(b.check_in) + ' → ' + fmt(b.check_out) + '</div>' +
-    (b.amount ? '<div class="booking-amount">💰 ₹' + Number(b.amount).toLocaleString('en-IN') + '</div>' : '') +
-    '</div>';
-}
- 
-async function loadBookings() {
+async function loadAll() {
   try {
     const r = await fetch(API + '/api/bookings');
     const j = await r.json();
     bookings = j.bookings || [];
-    renderRooms();
-    renderAllBookings();
+    renderAvail();
+    renderAll();
   } catch(e) {
-    document.getElementById('room-grid').innerHTML = '<div class="empty">⚠️ Could not load</div>';
+    document.getElementById('avail-body').innerHTML = '<div class="empty">⚠️ Could not load</div>';
   }
 }
  
-function renderRooms() {
+function renderAvail() {
   const today = new Date().toISOString().split('T')[0];
-  let html = '', free = 0;
+  let free = 0, html = '';
   ['1','2','3'].forEach(r => {
-    const cur = bookings.find(b => b.rooms && b.rooms.some(x => x.toString() === r) && b.check_in <= today && b.check_out >= today);
-    const nxt = bookings.filter(b => b.rooms && b.rooms.some(x => x.toString() === r) && b.check_in > today).sort((a,b) => a.check_in.localeCompare(b.check_in))[0];
+    const cur = bookings.find(b => b.rooms && b.rooms.some(x => x.toString()===r) && b.check_in <= today && b.check_out >= today);
+    const nxt = bookings.filter(b => b.rooms && b.rooms.some(x => x.toString()===r) && b.check_in > today).sort((a,b)=>a.check_in.localeCompare(b.check_in))[0];
     if (!cur) {
       free++;
       const sub = nxt ? 'Next: ' + nxt.guest_name + ' · ' + fmt(nxt.check_in) : 'No upcoming bookings';
-      html += '<div class="room-status"><div class="room-badge free">R' + r + '</div><div class="room-info"><div class="room-name">Room ' + r + '</div><div class="room-detail">' + sub + '</div></div><div class="room-pill free">Free</div></div>';
+      html += `<div class="rcard"><div class="rbadge free">R${r}</div><div class="rinfo"><div class="rname">Room ${r}</div><div class="rdetail">${sub}</div></div><div class="rpill free">Free</div></div>`;
     } else {
-      const sub = 'Until ' + fmt(cur.check_out) + (cur.amount ? ' · ₹' + Number(cur.amount).toLocaleString('en-IN') : '');
-      html += '<div class="room-status"><div class="room-badge occupied">R' + r + '</div><div class="room-info"><div class="room-name">Room ' + r + ' — ' + cur.guest_name + '</div><div class="room-detail">' + sub + '</div></div><div class="room-pill occupied">Occupied</div></div>';
+      const sub = cur.guest_name + ' · Until ' + fmt(cur.check_out) + (cur.amount ? ' · ₹'+Number(cur.amount).toLocaleString('en-IN') : '');
+      html += `<div class="rcard"><div class="rbadge occ">R${r}</div><div class="rinfo"><div class="rname">Room ${r}</div><div class="rdetail">${sub}</div></div><div class="rpill occ">Occupied</div></div>`;
     }
   });
-  document.getElementById('room-grid').innerHTML = html;
-  document.getElementById('avail-badge').textContent = free + ' Free';
+  document.getElementById('avail-body').innerHTML = html;
+  document.getElementById('avail-tag').textContent = free + ' Free';
 }
  
-// ADD BOOKING
-async function addBooking() {
-  const name = document.getElementById('new-name').value.trim();
-  const cin  = document.getElementById('new-checkin').value;
-  const cout = document.getElementById('new-checkout').value;
-  const amt  = parseInt(document.getElementById('new-amount').value) || 0;
-  const notes = document.getElementById('new-notes').value.trim();
- 
-  if (!selectedRooms.length) return toast('Select at least one room', 'error');
-  if (!name)  return toast('Enter guest name', 'error');
-  if (!cin)   return toast('Select check-in date', 'error');
-  if (!cout)  return toast('Select check-out date', 'error');
-  if (cout <= cin) return toast('Check-out must be after check-in', 'error');
- 
-  const conflict = bookings.find(b => b.rooms && b.rooms.some(r => selectedRooms.includes(r.toString())) && b.check_in < cout && b.check_out > cin);
-  if (conflict) return toast('Room conflict with ' + conflict.guest_name + '!', 'error');
- 
-  try {
-    const r = await fetch(API + '/api/add', {
-      method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ rooms: selectedRooms, guest_name: name, check_in: cin, check_out: cout, amount: amt, notes })
-    });
-    const j = await r.json();
-    if (j.success) {
-      toast('Booked! Room ' + selectedRooms.join('&') + ' for ' + name);
-      selectedRooms = []; ['1','2','3'].forEach(n => document.getElementById('rc'+n).classList.remove('selected'));
-      document.getElementById('new-name').value = '';
-      document.getElementById('new-checkin').value = '';
-      document.getElementById('new-checkout').value = '';
-      document.getElementById('new-amount').value = '';
-      document.getElementById('new-notes').value = '';
-      document.getElementById('s-new').classList.remove('open');
-      await loadBookings();
-    } else { toast(j.error || 'Failed', 'error'); }
-  } catch(e) { toast('Connection error', 'error'); }
-}
- 
-// AMEND
-function toggleAmend() {
-  const s = document.getElementById('s-amend');
-  s.classList.toggle('open');
-  if (s.classList.contains('open')) {
-    const el = document.getElementById('amend-list');
-    if (!bookings.length) { el.innerHTML = '<div class="empty"><span class="empty-icon">📭</span>No bookings yet</div>'; return; }
-    el.innerHTML = bookings.map(b => bookingItemHtml(b, 'a')).join('');
-    document.getElementById('amend-form').style.display = 'none';
-    amendId = null;
-  }
-}
-window.select_a = function(id) {
-  amendId = id;
-  document.querySelectorAll('#amend-list .booking-item').forEach(e => e.classList.remove('selected'));
-  document.getElementById('a' + id).classList.add('selected');
-  const b = bookings.find(x => x.id === id);
-  document.getElementById('a-name').value = b.guest_name || '';
-  document.getElementById('a-cin').value  = b.check_in || '';
-  document.getElementById('a-cout').value = b.check_out || '';
-  document.getElementById('a-amount').value = b.amount || '';
-  document.getElementById('a-notes').value = b.notes || '';
-  document.getElementById('amend-form').style.display = 'block';
-  document.getElementById('amend-form').scrollIntoView({behavior:'smooth',block:'nearest'});
-};
-async function saveAmend() {
-  if (!amendId) return;
-  const updates = { guest_name: document.getElementById('a-name').value.trim(), check_in: document.getElementById('a-cin').value, check_out: document.getElementById('a-cout').value, amount: parseInt(document.getElementById('a-amount').value)||0, notes: document.getElementById('a-notes').value.trim() };
-  if (!updates.guest_name) return toast('Name required', 'error');
-  if (!updates.check_in || !updates.check_out) return toast('Dates required', 'error');
-  if (updates.check_out <= updates.check_in) return toast('Check-out must be after check-in', 'error');
-  try {
-    const r = await fetch(API + '/api/update', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id: amendId, updates }) });
-    const j = await r.json();
-    if (j.success) { toast('Booking updated! ✅'); amendId = null; document.getElementById('amend-form').style.display = 'none'; document.getElementById('s-amend').classList.remove('open'); await loadBookings(); }
-    else toast(j.error || 'Failed', 'error');
-  } catch(e) { toast('Connection error', 'error'); }
-}
- 
-// CANCEL
-function toggleCancel() {
-  const s = document.getElementById('s-cancel');
-  s.classList.toggle('open');
-  if (s.classList.contains('open')) {
-    const el = document.getElementById('cancel-list');
-    if (!bookings.length) { el.innerHTML = '<div class="empty"><span class="empty-icon">📭</span>No bookings yet</div>'; return; }
-    el.innerHTML = bookings.map(b => bookingItemHtml(b, 'c')).join('');
-    document.getElementById('cancel-box').style.display = 'none';
-    cancelId = null;
-  }
-}
-window.select_c = function(id) {
-  cancelId = id;
-  document.querySelectorAll('#cancel-list .booking-item').forEach(e => e.classList.remove('selected'));
-  document.getElementById('c' + id).classList.add('selected');
-  const b = bookings.find(x => x.id === id);
-  const rooms = Array.isArray(b.rooms) ? b.rooms.join(', ') : b.rooms;
-  document.getElementById('cancel-text').innerHTML = '⚠️ Cancel this booking?<br><br><strong>' + b.guest_name + '</strong> — Room ' + rooms + '<br>📅 ' + fmt(b.check_in) + ' → ' + fmt(b.check_out) + (b.amount ? '<br>💰 ₹' + Number(b.amount).toLocaleString('en-IN') : '');
-  document.getElementById('cancel-box').style.display = 'block';
-  document.getElementById('cancel-box').scrollIntoView({behavior:'smooth',block:'nearest'});
-};
-async function confirmCancel() {
-  if (!cancelId) return;
-  try {
-    const r = await fetch(API + '/api/delete', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id: cancelId }) });
-    const j = await r.json();
-    if (j.success) { toast('Booking cancelled 🗑️', 'warn'); cancelId = null; document.getElementById('cancel-box').style.display = 'none'; document.getElementById('s-cancel').classList.remove('open'); await loadBookings(); }
-    else toast(j.error || 'Failed', 'error');
-  } catch(e) { toast('Connection error', 'error'); }
-}
- 
-function renderAllBookings() {
-  const el = document.getElementById('all-bookings-list');
-  const badge = document.getElementById('bookings-badge');
-  if (!el) return;
-  badge.textContent = bookings.length + ' Total';
+function renderAll() {
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('all-tag').textContent = bookings.length + ' Total';
   if (!bookings.length) {
-    el.innerHTML = '<div class="empty"><span class="empty-icon">📭</span>No bookings yet</div>';
+    document.getElementById('all-body').innerHTML = '<div class="empty">📭 No bookings yet</div>';
     return;
   }
-  // Sort by check_in
-  const sorted = [...bookings].sort((a,b) => a.check_in.localeCompare(b.check_in));
-  const today = new Date().toISOString().split('T')[0];
-  
-  // Group into current and upcoming
-  const current = sorted.filter(b => b.check_in <= today && b.check_out >= today);
-  const upcoming = sorted.filter(b => b.check_in > today);
-  const past = sorted.filter(b => b.check_out < today);
+  const cur = bookings.filter(b => b.check_in <= today && b.check_out >= today);
+  const up  = bookings.filter(b => b.check_in > today).sort((a,b)=>a.check_in.localeCompare(b.check_in));
+  const past = bookings.filter(b => b.check_out < today).sort((a,b)=>b.check_in.localeCompare(a.check_in));
  
   let html = '';
- 
-  if (current.length) {
-    html += '<div class="bl-label" style="color:var(--green)">● Currently Staying</div>';
-    html += current.map(b => bookingCard(b, 'current')).join('');
-  }
-  if (upcoming.length) {
-    html += '<div class="bl-label" style="color:var(--blue);margin-top:12px">◎ Upcoming</div>';
-    html += upcoming.map(b => bookingCard(b, 'upcoming')).join('');
-  }
-  if (past.length) {
-    html += '<div class="bl-label" style="color:var(--text3);margin-top:12px">○ Past</div>';
-    html += past.map(b => bookingCard(b, 'past')).join('');
-  }
-  el.innerHTML = html;
+  if (cur.length)  html += `<div class="glabel" style="color:var(--green)">● Currently Staying</div>` + cur.map(bCardHtml).join('');
+  if (up.length)   html += `<div class="glabel" style="color:var(--blue)">◎ Upcoming</div>` + up.map(bCardHtml).join('');
+  if (past.length) html += `<div class="glabel" style="color:var(--text3)">○ Past</div>` + past.map(bCardHtml).join('');
+  document.getElementById('all-body').innerHTML = html;
 }
  
-function bookingCard(b, type) {
+function bCardHtml(b) {
   const rooms = Array.isArray(b.rooms) ? b.rooms.join(' & ') : b.rooms;
-  const colors = { current: 'var(--green)', upcoming: 'var(--blue)', past: 'var(--text3)' };
-  const color = colors[type] || 'var(--text2)';
-  const nights = b.check_in && b.check_out ? Math.round((new Date(b.check_out) - new Date(b.check_in)) / 86400000) : 0;
-  return '<div class="bcard" style="border-left:3px solid ' + color + '">' +
-    '<div class="bcard-top">' +
-      '<div>' +
-        '<div class="bcard-guest">' + b.guest_name + '</div>' +
-        '<div class="bcard-rooms">Room ' + rooms + (nights ? ' · ' + nights + ' night' + (nights>1?'s':'') : '') + '</div>' +
-      '</div>' +
-      (b.amount ? '<div class="bcard-amount">₹' + Number(b.amount).toLocaleString('en-IN') + '</div>' : '') +
-    '</div>' +
-    '<div class="bcard-dates">📅 ' + fmt(b.check_in) + ' → ' + fmt(b.check_out) + '</div>' +
-    (b.notes ? '<div class="bcard-notes">📝 ' + b.notes + '</div>' : '') +
-  '</div>';
+  const nights = Math.round((new Date(b.check_out)-new Date(b.check_in))/86400000);
+  return `<div class="bcard">
+    <div class="bcard-row1"><span class="bguest">${b.guest_name}</span><span class="brooms">Room ${rooms}</span></div>
+    <div class="bdates">📅 ${fmt(b.check_in)} → ${fmt(b.check_out)} · ${nights} night${nights!==1?'s':''}</div>
+    ${b.amount ? `<div class="bamount">💰 ₹${Number(b.amount).toLocaleString('en-IN')}</div>` : ''}
+    ${b.notes ? `<div class="bnotes">📝 ${b.notes}</div>` : ''}
+  </div>`;
 }
  
-loadBookings();
-setInterval(loadBookings, 30000);
- 
-// Fix iOS scroll inside section-scroll divs
-function fixScrollListeners() {
-  document.querySelectorAll('.section-scroll').forEach(function(el) {
-    el.style.cssText += 'overflow-y:scroll !important;-webkit-overflow-scrolling:touch !important;touch-action:pan-y !important;';
-    // Remove old listeners by cloning
-    var clone = el.cloneNode(true);
-    el.parentNode.replaceChild(clone, el);
-  });
+function pickCardHtml(b, prefix) {
+  const rooms = Array.isArray(b.rooms) ? b.rooms.join(' & ') : b.rooms;
+  return `<div class="bcard clickable" id="${prefix}${b.id}" onclick="pick_${prefix}(${b.id})">
+    <div class="bcard-row1"><span class="bguest">${b.guest_name}</span><span class="brooms">Room ${rooms}</span></div>
+    <div class="bdates">📅 ${fmt(b.check_in)} → ${fmt(b.check_out)}</div>
+    ${b.amount ? `<div class="bamount">₹${Number(b.amount).toLocaleString('en-IN')}</div>` : ''}
+  </div>`;
 }
-document.addEventListener('DOMContentLoaded', fixScrollListeners);
-setTimeout(fixScrollListeners, 500);
  
-// Patch toggle to re-apply after open
-const _toggle = window.toggle;
-window.toggle = function(id) { _toggle(id); setTimeout(fixScrollListeners, 50); };
-window.toggleAmend = function() {
-  const s = document.getElementById('s-amend');
-  s.classList.toggle('open');
-  if (s.classList.contains('open')) {
-    const el = document.getElementById('amend-list');
-    if (!bookings.length) { el.innerHTML = '<div class="empty"><span class="empty-icon">📭</span>No bookings yet</div>'; }
-    else { el.innerHTML = bookings.map(b => bookingItemHtml(b, 'a')).join(''); }
-    document.getElementById('amend-form').style.display = 'none';
-    amendId = null;
-  }
-  setTimeout(fixScrollListeners, 50);
+function renderPick(elId, prefix) {
+  const el = document.getElementById(elId);
+  if (!bookings.length) { el.innerHTML = '<div class="empty">📭 No bookings yet</div>'; return; }
+  el.innerHTML = '<div class="flabel" style="margin-bottom:8px">Tap a booking to ' + (prefix==='a'?'edit':'cancel') + '</div>' + bookings.map(b => pickCardHtml(b, prefix)).join('');
+  if (prefix === 'a') document.getElementById('amend-form').style.display = 'none';
+  if (prefix === 'c') document.getElementById('cancel-confirm').style.display = 'none';
+}
+ 
+window.pick_a = function(id) {
+  amendId = id;
+  document.querySelectorAll('#amend-pick .bcard').forEach(e => e.classList.remove('sel'));
+  document.getElementById('a'+id).classList.add('sel');
+  const b = bookings.find(x => x.id===id);
+  document.getElementById('a-name').value = b.guest_name || '';
+  document.getElementById('a-in').value   = b.check_in || '';
+  document.getElementById('a-out').value  = b.check_out || '';
+  document.getElementById('a-amt').value  = b.amount || '';
+  document.getElementById('a-notes').value = b.notes || '';
+  document.getElementById('amend-form').style.display = 'block';
+  setTimeout(() => document.getElementById('amend-form').scrollIntoView({behavior:'smooth', block:'nearest'}), 50);
 };
-window.toggleCancel = function() {
-  const s = document.getElementById('s-cancel');
-  s.classList.toggle('open');
-  if (s.classList.contains('open')) {
-    const el = document.getElementById('cancel-list');
-    if (!bookings.length) { el.innerHTML = '<div class="empty"><span class="empty-icon">📭</span>No bookings yet</div>'; }
-    else { el.innerHTML = bookings.map(b => bookingItemHtml(b, 'c')).join(''); }
-    document.getElementById('cancel-box').style.display = 'none';
-    cancelId = null;
-  }
-  setTimeout(fixScrollListeners, 50);
+ 
+window.pick_c = function(id) {
+  cancelId = id;
+  document.querySelectorAll('#cancel-pick .bcard').forEach(e => e.classList.remove('sel'));
+  document.getElementById('c'+id).classList.add('sel');
+  const b = bookings.find(x => x.id===id);
+  const rooms = Array.isArray(b.rooms) ? b.rooms.join(' & ') : b.rooms;
+  document.getElementById('cancel-text').innerHTML = `⚠️ Cancel this booking?<br><br><strong>${b.guest_name}</strong> — Room ${rooms}<br>📅 ${fmt(b.check_in)} → ${fmt(b.check_out)}${b.amount ? '<br>💰 ₹'+Number(b.amount).toLocaleString('en-IN') : ''}`;
+  document.getElementById('cancel-confirm').style.display = 'block';
+  setTimeout(() => document.getElementById('cancel-confirm').scrollIntoView({behavior:'smooth', block:'nearest'}), 50);
 };
+ 
+async function doAdd() {
+  const name = document.getElementById('n-name').value.trim();
+  const cin  = document.getElementById('n-in').value;
+  const cout = document.getElementById('n-out').value;
+  const amt  = parseInt(document.getElementById('n-amt').value) || 0;
+  const notes = document.getElementById('n-notes').value.trim();
+ 
+  if (!selRooms.length) return toast('Select at least one room', 'err');
+  if (!name)  return toast('Enter guest name', 'err');
+  if (!cin)   return toast('Select check-in date', 'err');
+  if (!cout)  return toast('Select check-out date', 'err');
+  if (cout <= cin) return toast('Check-out must be after check-in', 'err');
+ 
+  const conflict = bookings.find(b => b.rooms && b.rooms.some(r => selRooms.includes(r.toString())) && b.check_in < cout && b.check_out > cin);
+  if (conflict) return toast('❌ Conflict with ' + conflict.guest_name, 'err');
+ 
+  try {
+    const r = await fetch(API + '/api/add', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({rooms:selRooms, guest_name:name, check_in:cin, check_out:cout, amount:amt, notes}) });
+    const j = await r.json();
+    if (j.success) {
+      toast('✅ Booked! Room ' + selRooms.join('&') + ' for ' + name);
+      selRooms = []; ['1','2','3'].forEach(n => document.getElementById('r'+n).classList.remove('on'));
+      ['n-name','n-in','n-out','n-amt','n-notes'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('s1').classList.remove('open');
+      await loadAll();
+    } else toast(j.error || 'Failed', 'err');
+  } catch(e) { toast('Connection error', 'err'); }
+}
+ 
+async function doAmend() {
+  if (!amendId) return;
+  const updates = {
+    guest_name: document.getElementById('a-name').value.trim(),
+    check_in:   document.getElementById('a-in').value,
+    check_out:  document.getElementById('a-out').value,
+    amount:     parseInt(document.getElementById('a-amt').value) || 0,
+    notes:      document.getElementById('a-notes').value.trim()
+  };
+  if (!updates.guest_name) return toast('Name required', 'err');
+  if (!updates.check_in || !updates.check_out) return toast('Dates required', 'err');
+  if (updates.check_out <= updates.check_in) return toast('Check-out must be after check-in', 'err');
+  try {
+    const r = await fetch(API + '/api/update', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({id:amendId, updates}) });
+    const j = await r.json();
+    if (j.success) { toast('✅ Updated!'); document.getElementById('s4').classList.remove('open'); amendId = null; await loadAll(); }
+    else toast(j.error || 'Failed', 'err');
+  } catch(e) { toast('Connection error', 'err'); }
+}
+ 
+async function doCancel() {
+  if (!cancelId) return;
+  try {
+    const r = await fetch(API + '/api/delete', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({id:cancelId}) });
+    const j = await r.json();
+    if (j.success) { toast('Cancelled 🗑️', 'warn'); document.getElementById('s5').classList.remove('open'); cancelId = null; await loadAll(); }
+    else toast(j.error || 'Failed', 'err');
+  } catch(e) { toast('Connection error', 'err'); }
+}
+ 
+loadAll();
+setInterval(loadAll, 30000);
 </script>
 </body>
 </html>
