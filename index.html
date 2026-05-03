@@ -47,9 +47,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);hei
 .section-badge{font-size:11px;padding:2px 8px;border-radius:20px;font-weight:500;}
 .section-arrow{color:var(--text3);font-size:12px;transition:transform .2s;flex-shrink:0}
 .section.open .section-arrow{transform:rotate(180deg)}
-.section-body{display:none;padding:0 14px 14px;border-top:1px solid var(--border);max-height:60vh;overflow-y:auto;-webkit-overflow-scrolling:touch;}
-.section-body::-webkit-scrollbar{display:none}
+.section-body{display:none;padding:0 14px 14px;border-top:1px solid var(--border);overflow:hidden;}
 .section.open .section-body{display:block}
+.section-scroll{max-height:55vh;overflow-y:scroll;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;}
+.section-scroll::-webkit-scrollbar{display:none}
 .s-new .section-icon,.s-new .section-badge{background:var(--green-dim);color:var(--green)}
 .s-avail .section-icon,.s-avail .section-badge{background:var(--blue-dim);color:var(--blue)}
 .s-amend .section-icon,.s-amend .section-badge{background:var(--amber-dim);color:var(--amber)}
@@ -182,8 +183,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);hei
         <div class="section-arrow">▼</div>
       </div>
       <div class="section-body">
+        <div class="section-scroll">
         <div class="room-status-grid" id="room-grid">
           <div class="loading"><span class="spinner"></span>Loading...</div>
+        </div>
         </div>
       </div>
     </div>
@@ -197,8 +200,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);hei
         <div class="section-arrow">▼</div>
       </div>
       <div class="section-body">
+        <div class="section-scroll">
         <div id="all-bookings-list">
           <div class="loading"><span class="spinner"></span>Loading...</div>
+        </div>
         </div>
       </div>
     </div>
@@ -212,6 +217,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);hei
         <div class="section-arrow">▼</div>
       </div>
       <div class="section-body">
+        <div class="section-scroll">
         <div class="list-label">Tap a booking to edit</div>
         <div class="booking-list" id="amend-list"><div class="loading"><span class="spinner"></span>Loading...</div></div>
         <div id="amend-form" style="display:none">
@@ -243,6 +249,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);hei
           </div>
           <button class="btn btn-amber" onclick="saveAmend()">💾 Save Changes</button>
         </div>
+        </div>
       </div>
     </div>
  
@@ -255,11 +262,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);hei
         <div class="section-arrow">▼</div>
       </div>
       <div class="section-body">
+        <div class="section-scroll">
         <div class="list-label">Tap a booking to cancel</div>
         <div class="booking-list" id="cancel-list"><div class="loading"><span class="spinner"></span>Loading...</div></div>
         <div id="cancel-box" style="display:none">
           <div class="cancel-confirm" id="cancel-text"></div>
           <button class="btn btn-red" onclick="confirmCancel()">🗑️ Yes, Cancel This Booking</button>
+        </div>
         </div>
       </div>
     </div>
