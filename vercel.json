@@ -1,5 +1,16 @@
 {
   "version": 2,
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache"
+        }
+      ]
+    }
+  ],
   "rewrites": [
     {
       "source": "/api/chat",
@@ -8,6 +19,18 @@
     {
       "source": "/api/bookings",
       "destination": "/api/bookings.js"
+    },
+    {
+      "source": "/api/add",
+      "destination": "/api/add.js"
+    },
+    {
+      "source": "/api/update",
+      "destination": "/api/update.js"
+    },
+    {
+      "source": "/api/delete",
+      "destination": "/api/delete.js"
     }
   ]
 }
