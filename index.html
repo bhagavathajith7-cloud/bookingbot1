@@ -26,7 +26,7 @@
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{height:100%;overflow:hidden}
-
+ 
   body {
     font-family:'Sora',sans-serif;
     background:var(--bg);
@@ -34,7 +34,7 @@
     align-items:center;
     justify-content:center;
   }
-
+ 
   .shell {
     width:100%;max-width:500px;
     height:100vh;
@@ -43,7 +43,7 @@
     border-left:1px solid var(--border);
     border-right:1px solid var(--border);
   }
-
+ 
   /* ── Header ── */
   .hdr {
     background:var(--panel);
@@ -75,7 +75,7 @@
     cursor:pointer;transition:all .2s;
   }
   .hdr-btn:hover{border-color:var(--green);color:var(--green)}
-
+ 
   /* ── Messages ── */
   .msgs {
     flex:1;overflow-y:auto;
@@ -87,7 +87,7 @@
   }
   .msgs::-webkit-scrollbar{width:4px}
   .msgs::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
-
+ 
   .date-chip{
     text-align:center;margin:6px 0;
   }
@@ -96,13 +96,13 @@
     font-size:11px;padding:4px 14px;border-radius:20px;
     border:1px solid var(--border);
   }
-
+ 
   /* ── Bubble ── */
   .bwrap{display:flex;flex-direction:column;max-width:84%;animation:slideUp .22s ease}
   @keyframes slideUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
   .bwrap.out{align-self:flex-end;align-items:flex-end}
   .bwrap.in {align-self:flex-start;align-items:flex-start}
-
+ 
   .bubble{
     padding:9px 12px 22px;
     border-radius:10px;
@@ -114,7 +114,7 @@
   }
   .bwrap.out .bubble{background:var(--out);border:1px solid var(--out-bdr);border-top-right-radius:2px}
   .bwrap.in  .bubble{background:var(--in); border:1px solid var(--border);border-top-left-radius:2px}
-
+ 
   .bmeta{
     position:absolute;bottom:5px;right:9px;
     font-size:10px;color:var(--muted);
@@ -122,7 +122,7 @@
     white-space:nowrap;
   }
   .btick{color:var(--tick);font-size:11px}
-
+ 
   /* ── Booking Card ── */
   .bcard{
     margin-top:8px;
@@ -147,7 +147,7 @@
   .bcard-row:last-child{border-bottom:none}
   .bcard-lbl{font-size:11px;color:var(--muted);flex-shrink:0;margin-right:8px;padding-top:1px}
   .bcard-val{font-size:12.5px;color:var(--text);font-weight:500;text-align:right}
-
+ 
   /* ── List card ── */
   .list-card{
     margin-top:8px;
@@ -166,7 +166,7 @@
   .list-guest{font-weight:600;color:var(--text)}
   .list-rooms{color:var(--green);font-size:12px}
   .list-dates{color:var(--muted);font-size:11px;margin-top:2px}
-
+ 
   /* ── Typing ── */
   #typing-wrap .bubble{padding:12px 14px 12px}
   .typing-dots{display:flex;align-items:center;gap:4px}
@@ -177,7 +177,7 @@
   .typing-dots span:nth-child(2){animation-delay:.2s}
   .typing-dots span:nth-child(3){animation-delay:.4s}
   @keyframes tdot{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-5px)}}
-
+ 
   /* ── Chips ── */
   .chips{
     display:flex;flex-wrap:wrap;gap:6px;
@@ -192,7 +192,7 @@
     cursor:pointer;transition:all .18s;
   }
   .chip:hover{border-color:var(--green);color:var(--green)}
-
+ 
   /* ── Input bar ── */
   .ibar{
     background:var(--panel);
@@ -214,7 +214,7 @@
   .itxt::placeholder{color:var(--muted)}
   .itxt::-webkit-scrollbar{width:3px}
   .itxt::-webkit-scrollbar-thumb{background:var(--border)}
-
+ 
   .sbtn{
     width:46px;height:46px;border-radius:50%;
     border:none;background:var(--green-d);color:#fff;
@@ -225,7 +225,7 @@
   .sbtn:active{transform:scale(.92)}
   .sbtn svg{width:22px;height:22px}
   .sbtn:disabled{opacity:.4;cursor:not-allowed}
-
+ 
   /* ── Modal (All Bookings) ── */
   .modal-bg{
     display:none;position:fixed;inset:0;
@@ -265,7 +265,7 @@
 </head>
 <body>
 <div class="shell">
-
+ 
   <!-- Header -->
   <div class="hdr">
     <div class="hdr-avatar">🏨</div>
@@ -277,7 +277,7 @@
       <button class="hdr-btn" onclick="openModal()">📋 All Bookings</button>
     </div>
   </div>
-
+ 
   <!-- Messages -->
   <div class="msgs" id="msgs">
     <div class="date-chip"><span>Today</span></div>
@@ -294,7 +294,7 @@
       </div>
     </div>
   </div>
-
+ 
   <!-- Quick chips -->
   <div class="chips">
     <button class="chip" onclick="fillInput('Show all bookings')">📋 All bookings</button>
@@ -302,7 +302,7 @@
     <button class="chip" onclick="fillInput('Who is in Room 2?')">👤 Who's in Room 2?</button>
     <button class="chip" onclick="fillInput('Cancel a booking')">❌ Cancel</button>
   </div>
-
+ 
   <!-- Input -->
   <div class="ibar">
     <textarea class="itxt" id="itxt" placeholder="Message BookingBot…" rows="1"></textarea>
@@ -311,7 +311,7 @@
     </button>
   </div>
 </div>
-
+ 
 <!-- All Bookings Modal -->
 <div class="modal-bg" id="modal">
   <div class="modal">
@@ -324,24 +324,24 @@
     </div>
   </div>
 </div>
-
+ 
 <script>
 // ── Config ─────────────────────────────────────────────────────────────────
 // Replace this with your actual Vercel deployment URL after deploying
 // e.g. "https://bookingbot-yourname.vercel.app"
 const API_BASE = window.location.origin;
-
+ 
 // ── Helpers ────────────────────────────────────────────────────────────────
 const msgsEl  = document.getElementById('msgs');
 const itxtEl  = document.getElementById('itxt');
 const sbtnEl  = document.getElementById('sbtn');
-
+ 
 function nowTime() {
   return new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
 }
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function scrollBot(){ msgsEl.scrollTop = msgsEl.scrollHeight; }
-
+ 
 function addBubble(html, dir) {
   const wrap = document.createElement('div');
   wrap.className = `bwrap ${dir}`;
@@ -352,7 +352,7 @@ function addBubble(html, dir) {
   msgsEl.appendChild(wrap);
   scrollBot();
 }
-
+ 
 function showTyping() {
   const wrap = document.createElement('div');
   wrap.className = 'bwrap in'; wrap.id = 'typing-wrap';
@@ -360,7 +360,7 @@ function showTyping() {
   msgsEl.appendChild(wrap); scrollBot();
 }
 function hideTyping() { document.getElementById('typing-wrap')?.remove(); }
-
+ 
 // ── Booking card HTML ──────────────────────────────────────────────────────
 function bookingCard(b, label) {
   const rooms = Array.isArray(b.rooms) ? b.rooms.join(', ') : b.rooms;
@@ -375,7 +375,7 @@ function bookingCard(b, label) {
     </div>
   </div>`;
 }
-
+ 
 function listCard(bookings) {
   if (!bookings.length) return `<div style="color:var(--muted);font-size:13px;padding:4px 0">No bookings found.</div>`;
   return `<div class="list-card">${bookings.map(b => {
@@ -389,17 +389,17 @@ function listCard(bookings) {
     </div>`;
   }).join('')}</div>`;
 }
-
+ 
 // ── Send message ───────────────────────────────────────────────────────────
 async function send() {
   const msg = itxtEl.value.trim();
   if (!msg || sbtnEl.disabled) return;
-
+ 
   itxtEl.value = ''; itxtEl.style.height = 'auto';
   sbtnEl.disabled = true;
   addBubble(esc(msg).replace(/\n/g,'<br>'), 'out');
   showTyping();
-
+ 
   try {
     const res  = await fetch(`${API_BASE}/api/chat`, {
       method: 'POST',
@@ -408,10 +408,11 @@ async function send() {
     });
     const json = await res.json();
     hideTyping();
-
-    const replyText = esc(json.reply || 'Done!').replace(/\n/g,'<br>');
+ 
+    console.log('API response:', JSON.stringify(json));
+    const replyText = esc(json.reply || json.message || json.error || 'No reply received').replace(/\n/g,'<br>');
     let extra = '';
-
+ 
     if (json.booking) {
       const b = json.booking;
       if (b.list) {
@@ -421,9 +422,9 @@ async function send() {
         extra = bookingCard(b, label);
       }
     }
-
+ 
     addBubble(replyText + extra, 'in');
-
+ 
   } catch(e) {
     hideTyping();
     addBubble('⚠️ Could not reach the server. Check your connection.', 'in');
@@ -432,7 +433,7 @@ async function send() {
     itxtEl.focus();
   }
 }
-
+ 
 // ── Modal ──────────────────────────────────────────────────────────────────
 async function openModal() {
   document.getElementById('modal').classList.add('open');
@@ -461,7 +462,7 @@ async function openModal() {
   }
 }
 function closeModal() { document.getElementById('modal').classList.remove('open'); }
-
+ 
 // ── Input auto-grow ────────────────────────────────────────────────────────
 itxtEl.addEventListener('input', function(){
   this.style.height = 'auto';
