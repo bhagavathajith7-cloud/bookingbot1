@@ -271,7 +271,7 @@
     <div class="hdr-avatar">🏨</div>
     <div class="hdr-info">
       <div class="hdr-name">BookingBot</div>
-      <div class="hdr-sub"><span class="pulse"></span>AI · Live Database</div>
+      <div class="hdr-sub"><span class="pulse"></span>AI · Live Database · 3 Rooms</div>
     </div>
     <div class="hdr-actions">
       <button class="hdr-btn" onclick="openModal()">📋 All Bookings</button>
@@ -364,6 +364,7 @@ function hideTyping() { document.getElementById('typing-wrap')?.remove(); }
 // ── Booking card HTML ──────────────────────────────────────────────────────
 function bookingCard(b, label) {
   const rooms = Array.isArray(b.rooms) ? b.rooms.join(', ') : b.rooms;
+  const amt = b.amount ? '₹' + Number(b.amount).toLocaleString('en-IN') : '';
   return `<div class="bcard">
     <div class="bcard-head"><span>${label || 'BOOKING CONFIRMED'}</span><span>#${b.id}</span></div>
     <div class="bcard-body">
@@ -371,6 +372,7 @@ function bookingCard(b, label) {
       <div class="bcard-row"><span class="bcard-lbl">Guest</span><span class="bcard-val">${esc(b.guest_name)}</span></div>
       <div class="bcard-row"><span class="bcard-lbl">Check-in</span><span class="bcard-val">${b.check_in}</span></div>
       <div class="bcard-row"><span class="bcard-lbl">Check-out</span><span class="bcard-val">${b.check_out}</span></div>
+      ${amt ? `<div class="bcard-row"><span class="bcard-lbl">Amount</span><span class="bcard-val" style="color:var(--accent)">${amt}</span></div>` : ''}
       ${b.notes ? `<div class="bcard-row"><span class="bcard-lbl">Notes</span><span class="bcard-val">${esc(b.notes)}</span></div>` : ''}
     </div>
   </div>`;
@@ -380,12 +382,13 @@ function listCard(bookings) {
   if (!bookings.length) return `<div style="color:var(--muted);font-size:13px;padding:4px 0">No bookings found.</div>`;
   return `<div class="list-card">${bookings.map(b => {
     const rooms = Array.isArray(b.rooms) ? b.rooms.join(', ') : b.rooms;
+    const amt = b.amount ? ' · ₹' + Number(b.amount).toLocaleString('en-IN') : '';
     return `<div class="list-item">
       <div class="list-item-top">
         <span class="list-guest">${esc(b.guest_name)}</span>
         <span class="list-rooms">Room ${esc(rooms)}</span>
       </div>
-      <div class="list-dates">${b.check_in} → ${b.check_out}</div>
+      <div class="list-dates">${b.check_in} → ${b.check_out}${amt}</div>
     </div>`;
   }).join('')}</div>`;
 }
