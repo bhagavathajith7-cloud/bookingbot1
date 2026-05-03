@@ -12,20 +12,24 @@ module.exports = async function handler(req, res) {
  
   try {
     const { message } = req.body;
-    if (!message) return res.status(400).json({ error: "No message" });
+    if (!message) return res.status(400).json({ reply: "No message provided", booking: null });
  
+    // Fetch bookings from Supabase
     const { data: bookings, error: fetchErr } = await supabase
       .from("bookings").select("*").order("check_in", { ascending: true });
     if (fetchErr) throw new Error("DB fetch failed: " + fetchErr.message);
  
-    const prompt = `You are BookingBot, a smart room booking assistant.
-CURRENT BOOKINGS: ${JSON.stringify(bookings)}
-Parse the user message and return ONLY raw JSON (no markdown, no backticks):
+    const prompt = `You are BookingBot, a friendly room booking assistant. 
+CURRENT BOOKINGS IN DATABASE: ${JSON.stringify(bookings)}
+ 
+The user says: "${message}"
+ 
+Respond with ONLY a valid JSON object. No markdown. No backticks. Just the raw JSON:
 {
-  "intent": "ADD"|"UPDATE"|"CANCEL"|"QUERY"|"LIST",
+  "intent": "ADD or UPDATE or CANCEL or QUERY or LIST",
   "data": {
-    "rooms": ["1"],
-    "guest_name": "Name",
+    "rooms": ["1", "2"],
+    "guest_name": "Name Here",
     "check_in": "2026-05-10",
     "check_out": "2026-05-28",
     "notes": "",
@@ -34,59 +38,102 @@ Parse the user message and return ONLY raw JSON (no markdown, no backticks):
     "query_type": "by_room",
     "target": ""
   },
-  "reply": "Friendly reply with emojis under 5 lines"
+  "reply": "Your friendly reply to the user here with emojis"
 }
-Use year 2026 if missing. ISO dates only.
-User message: ${message}`;
+ 
+Rules:
+- reply field must always have a helpful message
+- Use year 2026 if year is not mentioned
+- Dates must be YYYY-MM-DD format
+- For LIST intent: reply with all bookings summary
+- For QUERY intent: reply with what was found`;
  
     const aiRes = await fetch(GEMINI_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { maxOutputTokens: 800, temperature: 0.2 }
+        generationConfig: { maxOutputTokens: 1000, temperature: 0.1 }
       })
     });
  
-    const aiJson = await aiRes.json();
-    const raw = (aiJson.candidates?.[0]?.content?.parts?.[0]?.text || "{}").replace(/```json|```/g, "").trim();
+    if (!aiRes.ok) {
+      const errText = await aiRes.text();
+      throw new Error("Gemini API error: " + errText);
+    }
  
+    const aiJson = await aiRes.json();
+    const rawText = aiJson.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    
+    // Clean and parse JSON
+    const cleaned = rawText.replace(/```json/g, "").replace(/```/g, "").trim();
+    
     let parsed;
-    try { parsed = JSON.parse(raw); }
-    catch { return res.json({ reply: "Sorry, try rephrasing! 😅", booking: null }); }
+    try {
+      parsed = JSON.parse(cleaned);
+    } catch(parseErr) {
+      // If JSON parse fails, just return the raw text as a reply
+      return res.json({ 
+        reply: rawText || "I understood your message but couldn't process it. Please try again!", 
+        booking: null,
+        intent: "UNKNOWN"
+      });
+    }
  
     const { intent, data, reply } = parsed;
     let booking = null;
  
-    if (intent === "ADD" && data?.guest_name) {
+    if (intent === "ADD" && data && data.guest_name) {
       const { data: inserted, error } = await supabase.from("bookings")
-        .insert([{ rooms: data.rooms, guest_name: data.guest_name, check_in: data.check_in, check_out: data.check_out, notes: data.notes || "" }])
+        .insert([{
+          rooms: data.rooms || [],
+          guest_name: data.guest_name,
+          check_in: data.check_in,
+          check_out: data.check_out,
+          notes: data.notes || ""
+        }])
         .select().single();
       if (error) throw new Error("Insert failed: " + error.message);
       booking = inserted;
     }
-    if (intent === "UPDATE" && data?.match_id) {
+ 
+    if (intent === "UPDATE" && data && data.match_id) {
       const { data: updated, error } = await supabase.from("bookings")
         .update(data.updates).eq("id", data.match_id).select().single();
       if (error) throw new Error("Update failed: " + error.message);
       booking = updated;
     }
-    if (intent === "CANCEL" && data?.match_id) {
+ 
+    if (intent === "CANCEL" && data && data.match_id) {
       await supabase.from("bookings").delete().eq("id", data.match_id);
     }
-    if (intent === "LIST") booking = { list: bookings };
+ 
+    if (intent === "LIST") {
+      booking = { list: bookings };
+    }
+ 
     if (intent === "QUERY") {
       let filtered = bookings;
-      if (data?.query_type === "by_room")
-        filtered = bookings.filter(b => b.rooms?.some(r => r.toString() === data.target?.replace(/room\s*/i,"").trim()));
-      else if (data?.query_type === "by_guest")
-        filtered = bookings.filter(b => b.guest_name?.toLowerCase().includes(data.target?.toLowerCase()));
+      if (data && data.query_type === "by_room" && data.target) {
+        const roomNum = data.target.replace(/room\s*/i, "").trim();
+        filtered = bookings.filter(b => b.rooms && b.rooms.some(r => r.toString() === roomNum));
+      } else if (data && data.query_type === "by_guest" && data.target) {
+        filtered = bookings.filter(b => b.guest_name && b.guest_name.toLowerCase().includes(data.target.toLowerCase()));
+      }
       booking = { list: filtered };
     }
  
-    return res.json({ reply, booking, intent });
+    return res.json({ 
+      reply: reply || "Done! ✅", 
+      booking, 
+      intent 
+    });
+ 
   } catch (err) {
-    console.error(err);
-    return res.status(500).json({ reply: "⚠️ Server error: " + err.message, booking: null });
+    console.error("Handler error:", err);
+    return res.status(500).json({ 
+      reply: "⚠️ Error: " + err.message, 
+      booking: null 
+    });
   }
 };
