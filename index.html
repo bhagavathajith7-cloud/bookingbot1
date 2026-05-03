@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
 <title>BookingBot – Room Manager</title>
 <link rel="icon" href="/icon-192.png">
 <link rel="apple-touch-icon" href="/icon-192.png">
@@ -32,7 +32,7 @@
     --danger:   #f85149;
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  *{-webkit-tap-highlight-color:transparent}
+  *{-webkit-tap-highlight-color:transparent;touch-action:pan-x pan-y;}
   html{height:100%;height:-webkit-fill-available}
   body {
     font-family:'Sora',sans-serif;
@@ -545,6 +545,31 @@ window.addEventListener('appinstalled', () => {
   document.getElementById('install-banner').style.display = 'none';
   console.log('App installed!');
 });
+</script>
+ 
+<script>
+// Prevent pinch zoom
+document.addEventListener('gesturestart', function(e){ e.preventDefault(); }, {passive:false});
+document.addEventListener('gesturechange', function(e){ e.preventDefault(); }, {passive:false});
+document.addEventListener('gestureend', function(e){ e.preventDefault(); }, {passive:false});
+ 
+// Prevent double-tap zoom
+let lastTap = 0;
+document.addEventListener('touchend', function(e){
+  const now = Date.now();
+  if (now - lastTap < 300) e.preventDefault();
+  lastTap = now;
+}, {passive:false});
+ 
+// Prevent ctrl+scroll zoom on desktop
+document.addEventListener('wheel', function(e){
+  if (e.ctrlKey) e.preventDefault();
+}, {passive:false});
+ 
+// Prevent touchmove with multiple fingers (pinch)
+document.addEventListener('touchmove', function(e){
+  if (e.touches.length > 1) e.preventDefault();
+}, {passive:false});
 </script>
 </body>
 </html>
